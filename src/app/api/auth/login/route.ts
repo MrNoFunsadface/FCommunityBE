@@ -1,6 +1,57 @@
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
 
+/**
+ * @openapi
+ * /api/login:
+ *   post:
+ *     summary: Log in a user
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 example: mySecurePass123
+ *     responses:
+ *       200:
+ *         description: Successfully logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: 123e4567-e89b-12d3-a456-426614174000
+ *                 email:
+ *                   type: string
+ *                   example: john@example.com
+ *                 name:
+ *                   type: string
+ *                   example: John Doe
+ *       400:
+ *         description: Missing email or password
+ *       401:
+ *         description: Invalid email or password
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function POST(rq: Request) {
   try {
     const body = await rq.json();
@@ -36,7 +87,7 @@ export async function POST(rq: Request) {
         email: user.email,
         name: user.name,
       }),
-      { status: 200 }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error(error);

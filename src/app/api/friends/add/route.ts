@@ -1,10 +1,48 @@
 import { fetchRedis } from "@/helpers/redis";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { addFriendValidator } from "@/lib/validations/add-friends";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
+
+/**
+ * @swagger
+ * /api/friends/add:
+ *   post:
+ *     summary: Send a friend request
+ *     description: Sends a friend request to another user by their email address.
+ *     tags:
+ *       - Friends
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The email of the user to add
+ *                 example: "friend@example.com"
+ *     responses:
+ *       200:
+ *         description: Friend request sent successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "OK"
+ *       400:
+ *         description: Invalid request (user not found, already added, already friends, or self-add attempt)
+ *       401:
+ *         description: Unauthorized (missing or invalid JWT)
+ *       422:
+ *         description: Invalid request payload
+ */
 
 export async function POST(rq: Request) {
   try {

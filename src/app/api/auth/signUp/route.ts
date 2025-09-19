@@ -3,6 +3,64 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+/**
+ * @swagger
+ * /api/auth/signup:
+ *   post:
+ *     summary: Register a new user
+ *     description: Creates a new user with a name, email, and password. Returns a JWT for authentication.
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Alice Johnson"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "alice@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "SuperSecret123"
+ *     responses:
+ *       201:
+ *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "550e8400-e29b-41d4-a716-446655440000"
+ *                 name:
+ *                   type: string
+ *                   example: "Alice Johnson"
+ *                 email:
+ *                   type: string
+ *                   example: "alice@example.com"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         description: Missing fields or email already registered
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function POST(rq: Request) {
   try {
     const body = await rq.json();

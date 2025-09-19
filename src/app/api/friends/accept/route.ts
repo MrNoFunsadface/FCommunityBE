@@ -1,9 +1,47 @@
 import { fetchRedis } from "@/helpers/redis";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getServerSession } from "next-auth";
 import z from "zod";
 import jwt from "jsonwebtoken";
+
+/**
+ * @swagger
+ * /api/friends/accept:
+ *   post:
+ *     summary: Accept a friend request
+ *     description: Accepts a pending friend request. Both users will be added to each other's friend list.
+ *     tags:
+ *       - Friends
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the user who sent the friend request
+ *                 example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Friend request accepted successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "OK"
+ *       400:
+ *         description: Already friends, no friend request found, or invalid request
+ *       401:
+ *         description: Unauthorized (missing or invalid JWT)
+ *       422:
+ *         description: Invalid request payload
+ */
 
 export async function POST(req: Request) {
   try {
