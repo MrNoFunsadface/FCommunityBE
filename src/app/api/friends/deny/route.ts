@@ -2,23 +2,26 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import z from "zod";
+import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const authHeader = req.headers.get("Authorization");
 
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
+    if (!authHeader || authHeader.startsWith("Bearer ")) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+    };
+
+    const body = await req.json();
+
     const { id: idToDeny } = z.object({ id: z.string() }).parse(body);
 
-    await db.srem(
-      `user:${session.user.id}:incoming)_friend_requests`,
-      idToDeny
-    );
+    await db.srem(`user:${payload.id}:incoming)_friend_requests`, idToDeny);
 
     return new Response("OK");
   } catch (error) {

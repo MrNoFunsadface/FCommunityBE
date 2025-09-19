@@ -3,23 +3,29 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import z from "zod";
+import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get("Authorization");
+
+    if (!authHeader || authHeader.startsWith("Bearer ")) {
+      return new Response("Unauthorizaed", { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+    };
+
     const body = await req.json();
 
     const { id: idToAdd } = z.object({ id: z.string() }).parse(body);
 
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
     // verify both users are not already friends
     const areAlreadyFriends = await fetchRedis(
       "sismember",
-      `user:${session.user.id}:friends`,
+      `user:${payload.id}:friends`,
       idToAdd
     );
 
@@ -29,7 +35,7 @@ export async function POST(req: Request) {
 
     const hasFriendRequest = await fetchRedis(
       "sismember",
-      `user:${session.user.id}:incoming_friend_requests`,
+      `user:${payload.id}:incoming_friend_requests`,
       idToAdd
     );
 
@@ -37,11 +43,11 @@ export async function POST(req: Request) {
       return new Response("No friend request", { status: 400 });
     }
 
-    await db.sadd(`user:${session.user.id}:friends`, idToAdd);
+    await db.sadd(`user:${payload.id}:friends`, idToAdd);
 
-    await db.sadd(`user:${idToAdd}:friends`, session.user.id);
+    await db.sadd(`user:${idToAdd}:friends`, payload.id);
 
-    await db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd);
+    await db.srem(`user:${payload.id}:incoming_friend_requests`, idToAdd);
 
     return new Response("OK");
   } catch (error) {

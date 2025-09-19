@@ -4,9 +4,21 @@ import { db } from "@/lib/db";
 import { addFriendValidator } from "@/lib/validations/add-friends";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
+import jwt from "jsonwebtoken";
 
 export async function POST(rq: Request) {
   try {
+    const authHeader = rq.headers.get("Authorization");
+
+    if (!authHeader || authHeader.startsWith("Bearer ")) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+    };
+
     const body = await rq.json();
 
     const { email: emailToAdd } = addFriendValidator.parse(body.email);
@@ -20,22 +32,17 @@ export async function POST(rq: Request) {
       return new Response("This person does not exist", { status: 400 });
     }
 
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    if (idToAdd === session.user.id) {
+    if (idToAdd === payload.id) {
       return new Response("You cannot add yourself as a friend", {
         status: 400,
       });
     }
+
     // check if user is already added
     const isAlreadyAdded = (await fetchRedis(
       "sismember",
       `user:${idToAdd}:incoming_friend_requests`,
-      session.user.id
+      payload.id
     )) as 0 | 1;
 
     if (isAlreadyAdded) {
@@ -45,7 +52,7 @@ export async function POST(rq: Request) {
     // check if user is already friends
     const isAlreadyFriends = (await fetchRedis(
       "sismember",
-      `user:${session.user.id}:friends`,
+      `user:${payload.id}:friends`,
       idToAdd
     )) as 0 | 1;
 
@@ -55,7 +62,7 @@ export async function POST(rq: Request) {
 
     // valid request, send friend request
 
-    db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
+    db.sadd(`user:${idToAdd}:incoming_friend_requests`, payload.id);
 
     return new Response("OK");
   } catch (error) {
