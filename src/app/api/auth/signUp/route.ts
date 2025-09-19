@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export async function POST(rq: Request) {
   try {
@@ -18,7 +19,6 @@ export async function POST(rq: Request) {
     }
 
     const userId = randomUUID();
-
     const passwordHash = await bcrypt.hash(password, 10);
 
     await db.hset(`user:${userId}`, {
@@ -28,10 +28,21 @@ export async function POST(rq: Request) {
       password: passwordHash,
     });
 
-    await db.sadd(`user:email:${email}`, userId);
+    await db.set(`user:email:${email}`, userId);
 
-    return new Response(JSON.stringify({ id: userId, email, name }), {
+    const token = jwt.sign(
+      {
+        id: userId,
+        email,
+        name,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
+
+    return new Response(JSON.stringify({ id: userId, email, name, token }), {
       status: 201,
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error(error);
