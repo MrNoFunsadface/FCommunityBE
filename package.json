@@ -18,6 +18,7 @@
     "class-variance-authority": "^0.7.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
+    "nanoid": "^5.1.6",
     "next": "15.5.3",
     "next-auth": "^4.24.11",
     "postcss": "^8.5.6",

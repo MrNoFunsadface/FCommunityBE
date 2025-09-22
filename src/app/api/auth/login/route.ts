@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 /**
  * @openapi
@@ -42,6 +43,9 @@ import bcrypt from "bcrypt";
  *                 name:
  *                   type: string
  *                   example: Alice Johnson
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
  *         description: Missing email or password
  *       401:
@@ -68,7 +72,7 @@ export async function POST(rq: Request) {
     }
 
     const user = await db.hgetall(`user:${userId}`);
-    if (!user) {
+    if (!user || Object.keys(user).length === 0) {
       return new Response("User not found", { status: 404 });
     }
 
@@ -81,11 +85,22 @@ export async function POST(rq: Request) {
       return new Response("Invalid password", { status: 401 });
     }
 
+    const token = jwt.sign(
+      {
+        id: userId,
+        email: user.email,
+        name: user.name,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
+
     return new Response(
       JSON.stringify({
         id: user.id,
         email: user.email,
         name: user.name,
+        token,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
