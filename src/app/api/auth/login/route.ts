@@ -21,10 +21,10 @@ import bcrypt from "bcrypt";
  *               email:
  *                 type: string
  *                 format: email
- *                 example: john@example.com
+ *                 example: alice@example.com
  *               password:
  *                 type: string
- *                 example: mySecurePass123
+ *                 example: SuperSecret123
  *     responses:
  *       200:
  *         description: Successfully logged in
@@ -35,13 +35,13 @@ import bcrypt from "bcrypt";
  *               properties:
  *                 id:
  *                   type: string
- *                   example: 123e4567-e89b-12d3-a456-426614174000
+ *                   example: 6a38ae52-028e-4ad1-ace6-455425687e39
  *                 email:
  *                   type: string
- *                   example: john@example.com
+ *                   example: alice@example.com
  *                 name:
  *                   type: string
- *                   example: John Doe
+ *                   example: Alice Johnson
  *       400:
  *         description: Missing email or password
  *       401:
