@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 /**
  * @openapi
- * /api/login:
+ * /login:
  *   post:
  *     summary: Log in a user
  *     tags:

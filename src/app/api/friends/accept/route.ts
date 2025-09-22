@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /api/friends/accept:
+ * /friends/accept:
  *   post:
  *     summary: Accept a friend request
  *     description: Accepts a pending friend request. Both users will be added to each other's friend list.

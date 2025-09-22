@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /api/friends/add:
+ * /friends/add:
  *   post:
  *     summary: Send a friend request
  *     description: Sends a friend request to another user by their email address.

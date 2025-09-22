@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /api/friends/deny:
+ * /friends/deny:
  *   post:
  *     summary: Deny a friend request
  *     description: Denies a pending friend request from another user by removing it from the incoming friend requests list.

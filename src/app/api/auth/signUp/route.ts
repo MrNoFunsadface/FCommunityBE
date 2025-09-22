@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /api/auth/signup:
+ * /auth/signup:
  *   post:
  *     summary: Register a new user
  *     description: Creates a new user with a name, email, and password. Returns a JWT for authentication.
