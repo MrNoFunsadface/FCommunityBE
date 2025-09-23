@@ -24,15 +24,15 @@ import jwt from "jsonwebtoken";
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Alice Johnson"
+ *                 example: Cong Dep Trai
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "alice@example.com"
+ *                 example: congdeptrai@gmail.com
  *               password:
  *                 type: string
  *                 format: password
- *                 example: "SuperSecret123"
+ *                 example: congdeptrai
  *     responses:
  *       201:
  *         description: User successfully registered
@@ -44,17 +44,16 @@ import jwt from "jsonwebtoken";
  *                 id:
  *                   type: string
  *                   format: uuid
- *                   example: "550e8400-e29b-41d4-a716-446655440000"
- *                 name:
- *                   type: string
- *                   example: "Alice Johnson"
+ *                   example: 71db50d4-f833-47dd-aea2-07c014ce05ae
  *                 email:
  *                   type: string
- *                   example: "alice@example.com"
+ *                   example: congdeptrai@gmail.com
+ *                 name:
+ *                   type: string
+ *                   example: Cong Dep Trai
  *                 token:
  *                   type: string
- *                   description: JWT token for authentication
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcxZGI1MGQ0LWY4MzMtNDdkZC1hZWEyLTA3YzAxNGNlMDVhZSIsImVtYWlsIjoiY29uZ2RlcHRyYWlAZ21haWwuY29tIiwibmFtZSI6IkNvbmcgRGVwIFRyYWkiLCJpYXQiOjE3NTg2MTU5NDIsImV4cCI6MTc1OTIyMDc0Mn0.lmUlxYrx4EuaNzgpMg1fQYdygLAfR-DJ5vvsuFT0IEI
  *       400:
  *         description: Missing fields or email already registered
  *       500:

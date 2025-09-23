@@ -27,7 +27,7 @@ import jwt from "jsonwebtoken";
  *                 type: string
  *                 format: email
  *                 description: The email of the user to add
- *                 example: "friend@example.com"
+ *                 example: "congdeptrai@gmail.com"
  *     responses:
  *       200:
  *         description: Friend request sent successfully
@@ -59,7 +59,7 @@ export async function POST(rq: Request) {
 
     const body = await rq.json();
 
-    const { email: emailToAdd } = addFriendValidator.parse(body.email);
+    const { email: emailToAdd } = addFriendValidator.parse(body);
 
     const idToAdd = (await fetchRedis(
       "get",

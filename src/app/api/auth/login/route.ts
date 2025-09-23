@@ -22,10 +22,10 @@ import jwt from "jsonwebtoken";
  *               email:
  *                 type: string
  *                 format: email
- *                 example: alice@example.com
+ *                 example: congdeptrai@gmail.com
  *               password:
  *                 type: string
- *                 example: SuperSecret123
+ *                 example: congdeptrai
  *     responses:
  *       200:
  *         description: Successfully logged in
@@ -36,16 +36,16 @@ import jwt from "jsonwebtoken";
  *               properties:
  *                 id:
  *                   type: string
- *                   example: 6a38ae52-028e-4ad1-ace6-455425687e39
+ *                   example: 71db50d4-f833-47dd-aea2-07c014ce05ae
  *                 email:
  *                   type: string
- *                   example: alice@example.com
+ *                   example: congdeptrai@gmail.com
  *                 name:
  *                   type: string
- *                   example: Alice Johnson
+ *                   example: Cong Dep Trai
  *                 token:
  *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcxZGI1MGQ0LWY4MzMtNDdkZC1hZWEyLTA3YzAxNGNlMDVhZSIsImVtYWlsIjoiY29uZ2RlcHRyYWlAZ21haWwuY29tIiwibmFtZSI6IkNvbmcgRGVwIFRyYWkiLCJpYXQiOjE3NTg2MTU5NDIsImV4cCI6MTc1OTIyMDc0Mn0.lmUlxYrx4EuaNzgpMg1fQYdygLAfR-DJ5vvsuFT0IEI
  *       400:
  *         description: Missing email or password
  *       401:
