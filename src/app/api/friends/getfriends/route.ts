@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /friends/getfriendsbyid:
+ * /friends/getfriends:
  *   get:
  *     summary: Get all friends of the authenticated user
  *     description: Returns a list of the authenticated user's friends.
