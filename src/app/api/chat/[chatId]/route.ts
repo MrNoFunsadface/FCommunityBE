@@ -1,4 +1,5 @@
 import { fetchRedis } from "@/helpers/redis";
+import { chatHrefConstructor } from "@/lib/utils";
 
 /**
  * @openapi
@@ -35,7 +36,7 @@ import { fetchRedis } from "@/helpers/redis";
 
 export async function GET(
   rq: Request,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   try {
     const authHeader = rq.headers.get("Authorization");
@@ -43,11 +44,15 @@ export async function GET(
     if (!authHeader || !authHeader.startsWith("Bearer "))
       return new Response("Unauthorized", { status: 401 });
 
-    const chatId = params.chatId;
+    const { chatId } = await context.params;
+
+    const [userId1, userId2] = chatId.split("--");
+
+    const sortedChatId = chatHrefConstructor(userId1, userId2);
 
     const results: string[] = await fetchRedis(
       "zrange",
-      `chat:${chatId}:messages`,
+      `chat:${sortedChatId}:messages`,
       0,
       -1
     );

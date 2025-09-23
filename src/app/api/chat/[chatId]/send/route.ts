@@ -4,6 +4,7 @@ import { messageValidator } from "@/lib/validations/message";
 import { nanoid } from "nanoid";
 import { Message } from "@/lib/validations/message";
 import jwt from "jsonwebtoken";
+import { chatHrefConstructor } from "@/lib/utils";
 
 /**
  * @openapi
@@ -51,7 +52,10 @@ import jwt from "jsonwebtoken";
  *         description: Internal server error
  */
 
-export async function POST(req: Request) {
+export async function POST(
+  req: Request,
+  context: { params: Promise<{ chatId: string }> }
+) {
   try {
     const authHeader = req.headers.get("Authorization");
 
@@ -63,7 +67,9 @@ export async function POST(req: Request) {
       id: string;
     };
 
-    const { text, chatId }: { text: string; chatId: string } = await req.json();
+    const { chatId } = await context.params;
+
+    const { text }: { text: string } = await req.json();
 
     const [userId1, userId2] = chatId.split("--");
 
@@ -80,8 +86,20 @@ export async function POST(req: Request) {
 
     if (!isFriend) return new Response("Unauthorized", { status: 401 });
 
-    const rawsender = (await fetchRedis("get", `user:${payload.id}`)) as string;
-    const sender = JSON.parse(rawsender) as User;
+    const rawSender = (await db.hgetall(`user:${payload.id}`)) as Record<
+      string,
+      string
+    > | null;
+
+    if (!rawSender || !rawSender.id)
+      return new Response("User or userId not found", { status: 404 });
+
+    const sender: User = {
+      id: rawSender.id,
+      name: rawSender.name,
+      email: rawSender.email,
+      image: null,
+    };
 
     const timestamp = Date.now();
 
@@ -95,10 +113,15 @@ export async function POST(req: Request) {
     const message = messageValidator.parse(messageData);
 
     // all valid, send the message
-    await db.zadd(`chat:${chatId}:messages`, {
+
+    const sortedChatId = chatHrefConstructor(userId1, userId2);
+
+    await db.zadd(`chat:${sortedChatId}:messages`, {
       score: timestamp,
       member: JSON.stringify(message),
     });
+
+    return new Response("OK", { status: 200 });
   } catch (error) {
     if (error instanceof Error) {
       return new Response(error.message, { status: 500 });
