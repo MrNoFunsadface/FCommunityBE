@@ -5,6 +5,52 @@ import { nanoid } from "nanoid";
 import { Message } from "@/lib/validations/message";
 import jwt from "jsonwebtoken";
 
+/**
+ * @openapi
+ * /chat/{chatId}/send:
+ *   post:
+ *     summary: Send a message in a chat
+ *     description: Send a new message to a specific chat. Only participants of the chat who are friends can send messages.
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The unique identifier of the chat (format: userId1--userId2)"
+ *         example: 123e4567-e89b-12d3-a456-426614174000--789e4567-e89b-12d3-a456-426614174999
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Message content
+ *                 example: "Hey, how are you?"
+ *     responses:
+ *       200:
+ *         description: Message successfully sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Message"
+ *       401:
+ *         description: Unauthorized - Invalid token or not part of the chat
+ *       422:
+ *         description: Invalid message payload
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");

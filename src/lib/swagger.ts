@@ -15,6 +15,17 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
+      schemas: {
+        Message: {
+          type: "object",
+          properties: {
+            id: { type: "string", example: "msg_123abc" },
+            senderId: { type: "string", example: "user_123" },
+            text: { type: "string", example: "Hey, how are you?" },
+            timestamp: { type: "integer", example: 1695456789123 },
+          },
+        },
+      },
       securitySchemes: {
         bearerAuth: {
           type: "http",
