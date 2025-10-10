@@ -4,7 +4,8 @@ import { messageValidator } from "@/lib/validations/message";
 import { nanoid } from "nanoid";
 import { Message } from "@/lib/validations/message";
 import jwt from "jsonwebtoken";
-import { chatHrefConstructor } from "@/lib/utils";
+import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
+import { pusherServer } from "@/lib/pusher";
 
 /**
  * @openapi
@@ -111,6 +112,18 @@ export async function POST(
     };
 
     const message = messageValidator.parse(messageData);
+    // notify all connected chat room clients
+    await pusherServer.trigger(`chat:${chatId}`, "incoming-message", message);
+
+    await pusherServer.trigger(
+      toPusherKey(`user:${friendId}:chats`),
+      "new_message",
+      {
+        ...message,
+        senderImg: sender.image,
+        senderName: sender.name,
+      }
+    );
 
     // all valid, send the message
 

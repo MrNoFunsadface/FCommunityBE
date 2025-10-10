@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { addFriendValidator } from "@/lib/validations/add-friends";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 /**
  * @swagger
@@ -99,6 +101,22 @@ export async function POST(rq: Request) {
     }
 
     // valid request, send friend request
+
+    // return user from db from payload id
+    const user = (await db.hgetall(`user:${payload.id}`)) as Record<
+      string,
+      string
+    >;
+
+    await pusherServer.trigger(
+      toPusherKey(`user:${idToAdd}:incoming_friend_requests`),
+      "incoming_friend_requests",
+      {
+        senderId: user.id,
+        senderEmail: user.email,
+        senderName: user.name,
+      }
+    );
 
     db.sadd(`user:${idToAdd}:incoming_friend_requests`, payload.id);
 
