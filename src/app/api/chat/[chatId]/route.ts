@@ -18,7 +18,7 @@ import { chatHrefConstructor } from "@/lib/utils";
  *         schema:
  *           type: string
  *         description: "The unique identifier of the chat (format: userId1--userId2)"
- *         example: 123e4567-e89b-12d3-a456-426614174000--789e4567-e89b-12d3-a456-426614174999
+ *         example: 71db50d4-f833-47dd-aea2-07c014ce05ae--360fc452-7f02-4e11-89d7-a30d2eaf2085
  *     responses:
  *       200:
  *         description: A list of messages
