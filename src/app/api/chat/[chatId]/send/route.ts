@@ -1,11 +1,11 @@
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
 import { messageValidator } from "@/lib/validations/message";
-import { nanoid } from "nanoid";
 import { Message } from "@/lib/validations/message";
 import jwt from "jsonwebtoken";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { pusherServer } from "@/lib/pusher";
+import { randomUUID } from "crypto";
 
 /**
  * @openapi
@@ -105,7 +105,7 @@ export async function POST(
     const timestamp = Date.now();
 
     const messageData: Message = {
-      id: nanoid(),
+      id: randomUUID(),
       senderId: payload.id,
       text,
       timestamp,

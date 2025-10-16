@@ -2,6 +2,8 @@ import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
 import z from "zod";
 import jwt from "jsonwebtoken";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 /**
  * @swagger
@@ -45,54 +47,101 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader =
+      req.headers.get("authorization") || req.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response("Unauthorizaed", { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-    };
+
+    if (!process.env.JWT_SECRET) {
+      return new Response("Server configuration error", { status: 500 });
+    }
+
+    let payload: { id: string };
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
+    } catch (err: any) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     const body = await req.json();
-
     const { id: idToAdd } = z.object({ id: z.string() }).parse(body);
 
     // verify both users are not already friends
-    const areAlreadyFriends = await fetchRedis(
+    const areAlreadyFriendsRaw = await fetchRedis(
       "sismember",
       `user:${payload.id}:friends`,
       idToAdd
     );
+    const areAlreadyFriends = Boolean(Number(areAlreadyFriendsRaw));
 
     if (areAlreadyFriends) {
       return new Response("Already friends", { status: 400 });
     }
 
-    const hasFriendRequest = await fetchRedis(
+    const hasFriendRequestRaw = await fetchRedis(
       "sismember",
       `user:${payload.id}:incoming_friend_requests`,
       idToAdd
     );
+    const hasFriendRequest = Boolean(Number(hasFriendRequestRaw));
 
     if (!hasFriendRequest) {
       return new Response("No friend request", { status: 400 });
     }
 
-    await db.sadd(`user:${payload.id}:friends`, idToAdd);
+    const [rawUser, rawFriend] = await Promise.all([
+      db.hgetall(`user:${payload.id}`),
+      db.hgetall(`user:${idToAdd}`),
+    ]);
 
-    await db.sadd(`user:${idToAdd}:friends`, payload.id);
+    if (!rawUser?.id || !rawFriend?.id) {
+      return new Response("Invalid request", { status: 400 });
+    }
 
-    await db.srem(`user:${payload.id}:incoming_friend_requests`, idToAdd);
+    const user = {
+      id: rawUser.id,
+      name: rawUser.name,
+      email: rawUser.email,
+      image: rawUser.image ?? null,
+    };
 
-    return new Response("OK");
-  } catch (error) {
+    const friend = {
+      id: rawFriend.id,
+      name: rawFriend.name,
+      email: rawFriend.email,
+      image: rawFriend.image ?? null,
+    };
+
+    // update both users' friend sets
+    await Promise.all([
+      db.sadd(`user:${payload.id}:friends`, idToAdd),
+      db.sadd(`user:${idToAdd}:friends`, payload.id),
+      db.srem(`user:${payload.id}:incoming_friend_requests`, idToAdd),
+    ]);
+
+    // notify the other user about the new friend
+    await pusherServer.trigger(
+      toPusherKey(`user:${idToAdd}:friends`),
+      "new_friend",
+      user
+    );
+
+    await pusherServer.trigger(
+      toPusherKey(`user:${payload.id}:friends`),
+      "new_friend",
+      friend
+    );
+
+    return new Response("OK", { status: 200 });
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return new Response("Invalid request payload", { status: 422 });
     }
 
-    return new Response("Invalid request", { status: 400 });
+    return new Response("Invalid request", { status: 500 });
   }
 }
