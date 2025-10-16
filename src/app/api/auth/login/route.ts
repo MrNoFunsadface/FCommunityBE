@@ -92,7 +92,7 @@ export async function POST(rq: Request) {
         name: user.name,
       },
       process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     return new Response(
