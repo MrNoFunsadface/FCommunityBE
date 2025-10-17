@@ -4,6 +4,7 @@ import z from "zod";
 import jwt from "jsonwebtoken";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { randomUUID } from "crypto";
 
 /**
  * @swagger
@@ -121,6 +122,18 @@ export async function POST(req: Request) {
       db.sadd(`user:${payload.id}:friends`, idToAdd),
       db.sadd(`user:${idToAdd}:friends`, payload.id),
       db.srem(`user:${payload.id}:incoming_friend_requests`, idToAdd),
+    ]);
+
+    const newChatId = randomUUID();
+
+    await Promise.all([
+      db.hset(`user:${payload.id}:dms`, { [idToAdd]: newChatId }),
+      db.hset(`user:${idToAdd}:dms`, { [payload.id]: newChatId }),
+      db.sadd(`chat:${newChatId}:members`, payload.id, idToAdd),
+      db.hset(`chat:${newChatId}:meta`, { type: "dms" }),
+      db.hset(`chat:${newChatId}:meta`, { createdAt: Date.now() }),
+      db.hset(`chat:${newChatId}:meta`, { user1: payload.id }),
+      db.hset(`chat:${newChatId}:meta`, { user2: idToAdd }),
     ]);
 
     // notify the other user about the new friend

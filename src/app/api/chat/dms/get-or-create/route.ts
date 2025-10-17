@@ -22,12 +22,12 @@ import jwt from "jsonwebtoken";
  *           schema:
  *             type: object
  *             required:
- *               - friendId
+ *               - userId
  *             properties:
- *               friendId:
+ *               userId:
  *                 type: string
  *                 description: The ID of the friend to start or retrieve a DM with.
- *                 example: "user_42a8e09b"
+ *                 example: "360fc452-7f02-4e11-89d7-a30d2eaf2085"
  *     responses:
  *       200:
  *         description: Successfully retrieved or created a DM chat.
@@ -39,9 +39,9 @@ import jwt from "jsonwebtoken";
  *                 chatId:
  *                   type: string
  *                   description: The unique identifier of the DM chat.
- *                   example: "9f7c5eaa-2b1e-4d6b-b3c1-930b0d72e1f1"
+ *                   example: "fc49b6d9-7239-4e8e-a23f-2a8a16e4f0e8"
  *       400:
- *         description: Missing or invalid friendId.
+ *         description: Missing or invalid userId.
  *       401:
  *         description: Unauthorized or not friends with the specified user.
  *       500:
@@ -62,33 +62,33 @@ export async function POST(req: Request) {
     };
 
     const body = await req.json();
-    const { friendId } = body as { friendId?: string };
+    const { userId } = body as { userId?: string };
 
-    if (!friendId) return new Response("Missing friendId", { status: 400 });
+    if (!userId) return new Response("Missing friendId", { status: 400 });
 
     // check if requester is friend with friendId
     const isFriend = await fetchRedis(
       "sismember",
       `user:${payload.id}:friends`,
-      friendId
+      userId
     );
 
     if (isFriend === 0) return new Response("Unauthorized", { status: 401 });
 
     // check if the chatId exist using friendId
-    const chatId = await db.hget(`user:${payload.id}:dms`, friendId);
+    const chatId = await db.hget(`user:${payload.id}:dms`, userId);
 
     if (!chatId) {
       const newChatId = randomUUID();
 
       await Promise.all([
-        db.hset(`user:${payload.id}:dms`, { [friendId]: newChatId }),
-        db.hset(`user:${friendId}:dms`, { [payload.id]: newChatId }),
-        db.sadd(`chat:${newChatId}:members`, payload.id, friendId),
-        db.hset(`chat:${chatId}:meta`, { type: "dms" }),
-        db.hset(`chat:${chatId}:meta`, { createdAt: Date.now() }),
-        db.hset(`chat:${chatId}:meta`, { user1: payload.id }),
-        db.hset(`chat:${chatId}:meta`, { user2: friendId }),
+        db.hset(`user:${payload.id}:dms`, { [userId]: newChatId }),
+        db.hset(`user:${userId}:dms`, { [payload.id]: newChatId }),
+        db.sadd(`chat:${newChatId}:members`, payload.id, userId),
+        db.hset(`chat:${newChatId}:meta`, { type: "dms" }),
+        db.hset(`chat:${newChatId}:meta`, { createdAt: Date.now() }),
+        db.hset(`chat:${newChatId}:meta`, { user1: payload.id }),
+        db.hset(`chat:${newChatId}:meta`, { user2: userId }),
       ]);
 
       return new Response(

@@ -22,7 +22,7 @@ import jwt from "jsonwebtoken";
  *               items:
  *                 type: object
  *                 properties:
- *                   friendId:
+ *                   userId:
  *                     type: string
  *                     description: The ID of the friend the user has a DM with.
  *                     example: "user_8f12c09a"
@@ -52,8 +52,8 @@ export async function GET(req: Request) {
 
     const dms = await db.hgetall(`user:${payload.id}:dms`);
 
-    const dmList = Object.entries(dms || {}).map(([friendId, chatId]) => ({
-      friendId,
+    const dmList = Object.entries(dms || {}).map(([userId, chatId]) => ({
+      userId,
       chatId,
     }));
 

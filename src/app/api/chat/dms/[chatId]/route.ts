@@ -42,7 +42,7 @@ import jwt from "jsonwebtoken";
  *       properties:
  *         chatId:
  *           type: string
- *           example: "dms_abc123"
+ *           example: "767f62c7-2cd5-4746-9a94-8467e573dc97"
  *         type:
  *           type: string
  *           description: Chat type, usually "dms".
@@ -51,13 +51,13 @@ import jwt from "jsonwebtoken";
  *           type: integer
  *           nullable: true
  *           description: Unix timestamp when the chat was created.
- *           example: 1734374892000
+ *           example: 1760682108173
  *         members:
  *           type: array
  *           description: Array of user IDs participating in the chat.
  *           items:
  *             type: string
- *           example: ["user123", "user456"]
+ *           example: ["71db50d4-f833-47dd-aea2-07c014ce05ae", "360fc452-7f02-4e11-89d7-a30d2eaf2085"]
  *         lastMessage:
  *           type: object
  *           nullable: true
@@ -73,10 +73,10 @@ import jwt from "jsonwebtoken";
  *             timestamp:
  *               type: integer
  *           example:
- *             id: "a12f6b9d-3e4f-4a2c-8d90-7b9e6b2c4c10"
- *             senderId: "user123"
+ *             id: "6fe5f221-d5bb-42d3-af8f-5f4786655b78"
+ *             senderId: "71db50d4-f833-47dd-aea2-07c014ce05ae"
  *             text: "Hey, are you free later?"
- *             timestamp: 1734374892000
+ *             timestamp: 1760682761439
  */
 
 export async function GET(
@@ -102,12 +102,32 @@ export async function GET(
       return new Response("Chat not found", { status: 404 });
     }
 
-    let lastMessage = null;
+    // robust lastMessage parsing
+    let lastMessage: any = null;
     if (rawMeta.lastMessage) {
+      const raw = rawMeta.lastMessage;
       try {
-        lastMessage = JSON.parse(rawMeta.lastMessage as string);
-      } catch (error) {
-        lastMessage = null;
+        if (typeof raw === "string") {
+          // try single parse
+          lastMessage = JSON.parse(raw);
+        } else {
+          // already an object
+          lastMessage = raw;
+        }
+      } catch (err) {
+        // try double-encoded JSON (common mistake)
+        try {
+          lastMessage = JSON.parse(JSON.parse(String(raw)));
+        } catch (err2) {
+          // fallback: log and leave null
+          console.error("Failed to parse lastMessage:", raw);
+          lastMessage = null;
+        }
+      }
+
+      // normalize timestamp if present
+      if (lastMessage && lastMessage.timestamp) {
+        lastMessage.timestamp = Number(lastMessage.timestamp);
       }
     }
 

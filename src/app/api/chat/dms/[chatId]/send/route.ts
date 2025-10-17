@@ -64,7 +64,7 @@ import { Message, messageValidator } from "@/lib/validations/message";
  *         senderId:
  *           type: string
  *           description: The ID of the user who sent the message.
- *           example: "user123"
+ *           example: "71db50d4-f833-47dd-aea2-07c014ce05ae"
  *         text:
  *           type: string
  *           example: "Hello there!"

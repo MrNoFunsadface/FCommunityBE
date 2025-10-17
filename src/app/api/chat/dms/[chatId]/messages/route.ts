@@ -76,10 +76,11 @@ export async function POST(
   context: { params: Promise<{ chatId: string }> }
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader =
+      req.headers.get("Authorization") || req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response("Unauthorizaed", { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
@@ -95,7 +96,7 @@ export async function POST(
       endPos?: number;
     };
 
-    if (typeof startPos !== "string" || typeof endPos !== "string")
+    if (typeof startPos !== "number" || typeof endPos !== "number")
       return new Response("Invalid payload: startPos and endPos required", {
         status: 422,
       });
@@ -103,7 +104,7 @@ export async function POST(
     // verify if user allow to see the requested dms or if chatId exist in db
     const isMember = await fetchRedis(
       "sismember",
-      `chat:${chatId}:users`,
+      `chat:${chatId}:members`,
       payload.id
     );
 
@@ -118,12 +119,35 @@ export async function POST(
       return new Response("Conflict: Chat type must be DMs", { status: 409 });
 
     // return messages
-    const results: string[] = await fetchRedis(
+    const rawResults: string[] = await fetchRedis(
       "zrange",
       `chat:${chatId}:messages`,
       startPos,
       endPos
     );
+
+    const results = (rawResults || [])
+      .map((item) => {
+        let parsed: any = null;
+        try {
+          parsed = typeof item === "string" ? JSON.parse(item) : item;
+        } catch (err) {
+          // try handling double-encoded JSON
+          try {
+            parsed = JSON.parse(JSON.parse(String(item)));
+          } catch (err2) {
+            console.error("Failed to parse message item:", item);
+            parsed = null;
+          }
+        }
+
+        if (parsed && parsed.timestamp) {
+          parsed.timestamp = Number(parsed.timestamp);
+        }
+
+        return parsed;
+      })
+      .filter(Boolean);
 
     return new Response(JSON.stringify(results), {
       status: 200,
