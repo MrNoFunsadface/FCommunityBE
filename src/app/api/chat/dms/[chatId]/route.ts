@@ -75,7 +75,7 @@ import jwt from "jsonwebtoken";
  *           example:
  *             id: "6fe5f221-d5bb-42d3-af8f-5f4786655b78"
  *             senderId: "71db50d4-f833-47dd-aea2-07c014ce05ae"
- *             text: "Hey, are you free later?"
+ *             text: "OMG WAHROO"
  *             timestamp: 1760682761439
  */
 

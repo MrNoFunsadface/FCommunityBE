@@ -53,7 +53,7 @@ import jwt from "jsonwebtoken";
  *                   example: Cong Dep Trai
  *                 token:
  *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcxZGI1MGQ0LWY4MzMtNDdkZC1hZWEyLTA3YzAxNGNlMDVhZSIsImVtYWlsIjoiY29uZ2RlcHRyYWlAZ21haWwuY29tIiwibmFtZSI6IkNvbmcgRGVwIFRyYWkiLCJpYXQiOjE3NTg2MTU5NDIsImV4cCI6MTc1OTIyMDc0Mn0.lmUlxYrx4EuaNzgpMg1fQYdygLAfR-DJ5vvsuFT0IEI
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcxZGI1MGQ0LWY4MzMtNDdkZC1hZWEyLTA3YzAxNGNlMDVhZSIsImVtYWlsIjoiY29uZ2RlcHRyYWlAZ21haWwuY29tIiwibmFtZSI6IkNvbmcgRGVwIFRyYWkiLCJpYXQiOjE3NjA3MDQxNDgsImV4cCI6MTc2MzI5NjE0OH0.NIhRBo4l_aofd5v3uv81ox7aP8qNp45kHwScFWaGaWg
  *       400:
  *         description: Missing fields or email already registered
  *       500:
@@ -94,7 +94,7 @@ export async function POST(rq: Request) {
         name,
       },
       process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     return new Response(JSON.stringify({ id: userId, email, name, token }), {

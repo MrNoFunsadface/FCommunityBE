@@ -25,11 +25,11 @@ import jwt from "jsonwebtoken";
  *                   userId:
  *                     type: string
  *                     description: The ID of the friend the user has a DM with.
- *                     example: "user_8f12c09a"
+ *                     example: "360fc452-7f02-4e11-89d7-a30d2eaf2085"
  *                   chatId:
  *                     type: string
  *                     description: The unique ID of the DM chat between the user and this friend.
- *                     example: "4b5b0f33-0d65-4c91-b502-c2d16c9cb875"
+ *                     example: "767f62c7-2cd5-4746-9a94-8467e573dc97"
  *       401:
  *         description: Unauthorized (missing or invalid token).
  *       500:
