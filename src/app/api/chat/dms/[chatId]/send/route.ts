@@ -35,7 +35,7 @@ import { Message, messageValidator } from "@/lib/validations/message";
  *               text:
  *                 type: string
  *                 description: The message content to send.
- *                 example: "Hey, how are you?"
+ *                 example: "OMG WAHROO"
  *     responses:
  *       201:
  *         description: Message sent successfully.
@@ -60,18 +60,18 @@ import { Message, messageValidator } from "@/lib/validations/message";
  *         id:
  *           type: string
  *           format: uuid
- *           example: "a12f6b9d-3e4f-4a2c-8d90-7b9e6b2c4c10"
+ *           example: "767f62c7-2cd5-4746-9a94-8467e573dc97"
  *         senderId:
  *           type: string
  *           description: The ID of the user who sent the message.
  *           example: "71db50d4-f833-47dd-aea2-07c014ce05ae"
  *         text:
  *           type: string
- *           example: "Hello there!"
+ *           example: "OMG WAHROO"
  *         timestamp:
  *           type: integer
  *           description: Unix timestamp (milliseconds) when the message was sent.
- *           example: 1734374892000
+ *           example: 1760682761439
  */
 
 export async function POST(

@@ -39,7 +39,7 @@ import jwt from "jsonwebtoken";
  *                 chatId:
  *                   type: string
  *                   description: The unique identifier of the DM chat.
- *                   example: "fc49b6d9-7239-4e8e-a23f-2a8a16e4f0e8"
+ *                   example: "767f62c7-2cd5-4746-9a94-8467e573dc97"
  *       400:
  *         description: Missing or invalid userId.
  *       401:

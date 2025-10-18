@@ -11,7 +11,7 @@ import { randomUUID } from "crypto";
  * @openapi
  * /chat/{chatId}/send:
  *   post:
- *     summary: Send a message in a chat
+ *     summary: Send a message in a chat [UNDER MAINTAINANCE]
  *     description: Send a new message to a specific chat. Only participants of the chat who are friends can send messages.
  *     tags:
  *       - Chat

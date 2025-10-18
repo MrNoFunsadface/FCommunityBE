@@ -5,7 +5,7 @@ import { chatHrefConstructor } from "@/lib/utils";
  * @openapi
  * /chat/{chatId}:
  *   get:
- *     summary: Get messages from a chat
+ *     summary: Get messages from a chat [UNDER MAINTAINANCE]
  *     description: Retrieve all messages from a specific chat.
  *     tags:
  *       - Chat
