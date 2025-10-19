@@ -12,7 +12,7 @@ import jwt from "jsonwebtoken";
  *       Returns the existing DM chat ID between the authenticated user and a specified friend.
  *       If no chat exists, a new one is created automatically.
  *     tags:
- *       - Chat
+ *       - Chat DMs
  *     security:
  *       - bearerAuth: []
  *     requestBody:

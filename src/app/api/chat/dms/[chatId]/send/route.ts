@@ -13,7 +13,7 @@ import { Message, messageValidator } from "@/lib/validations/message";
  *       Sends a message to a direct message (DM) chat between two users.
  *       Requires a valid Bearer token. The chat must be of type `dms`, and the sender must be a member and a friend of the recipient.
  *     tags:
- *       - Chat
+ *       - Chat DMs
  *     security:
  *       - bearerAuth: []
  *     parameters:

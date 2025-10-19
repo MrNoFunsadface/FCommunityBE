@@ -4,23 +4,23 @@ import jwt from "jsonwebtoken";
 
 /**
  * @openapi
- * /chat/dms/{chatId}/messages:
+ * /chat/group/{chatId}/messages:
  *   post:
- *     summary: Get messages for a DMs chat
- *     description: |
- *       Returns a list of messages from a DMs chat between two users.
- *       The requester must be a member of the chat and the chat type must be `dms`.
+ *     summary: Get a range of messages for a group chat
+ *     description: >
+ *       Returns a page / range of messages from a group chat's sorted-set.
+ *       The requester must be a member of the group and the chat type must be `group`.
  *     tags:
- *       - Chat DMs
+ *       - Chat Group
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: chatId
+ *       - name: chatId
+ *         in: path
  *         required: true
+ *         description: The ID of the group chat to fetch messages from.
  *         schema:
  *           type: string
- *         description: The ID of the DMs chat.
  *     requestBody:
  *       required: true
  *       content:
@@ -34,41 +34,54 @@ import jwt from "jsonwebtoken";
  *               startPos:
  *                 type: integer
  *                 example: 0
- *                 description: The starting index of messages to retrieve.
+ *                 description: Starting index for the range (ZRANGE). Use negative indices for offsets from the end.
  *               endPos:
  *                 type: integer
- *                 example: 20
- *                 description: The ending index of messages to retrieve.
+ *                 example: 19
+ *                 description: Ending index for the range (ZRANGE).
  *     responses:
  *       200:
- *         description: Successfully retrieved messages.
+ *         description: Successfully retrieved messages (array of Message objects).
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: 7f0a9f3e-8b6d-4f38-9a4b-b7d9c7b4ef24
- *                   senderId:
- *                     type: string
- *                     example: 36dfc452-7f02-4e11-89d7-a30d2eaf2085
- *                   text:
- *                     type: string
- *                     example: Hey there!
- *                   timestamp:
- *                     type: integer
- *                     example: 1734345051220
+ *                 $ref: '#/components/schemas/Message'
  *       401:
- *         description: Unauthorized — missing or invalid token, or user is not a chat member.
+ *         description: Unauthorized — missing/invalid token or not a chat member.
+ *       403:
+ *         description: Forbidden — requester is not a member of the group.
+ *       404:
+ *         description: Chat not found.
  *       409:
- *         description: Conflict — the chat type is not DMs.
+ *         description: Conflict — the chat type is not `group`.
  *       422:
- *         description: Invalid payload — missing or incorrect startPos or endPos.
+ *         description: Unprocessable Entity — invalid payload (startPos/endPos required and must be numbers).
  *       500:
  *         description: Internal server error.
+ *
+ * components:
+ *   schemas:
+ *     Message:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Message identifier (UUID or similar).
+ *           example: "b93af89b-4812-4b41-901a-f86b3c5f1e8e"
+ *         senderId:
+ *           type: string
+ *           description: User ID of the sender.
+ *           example: "360fc452-7f02-4e11-89d7-a30d2eaf2085"
+ *         text:
+ *           type: string
+ *           description: Message text content.
+ *           example: "Hey there!"
+ *         timestamp:
+ *           type: integer
+ *           description: Unix timestamp in milliseconds.
+ *           example: 1734374892000
  */
 
 export async function POST(
@@ -112,11 +125,11 @@ export async function POST(
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // verify if chat is a dms or not
+    // verify if chat is a group or not
     const type = await db.hget(`chat:${chatId}:meta`, "type");
 
-    if (type !== "dms")
-      return new Response("Conflict: Chat type must be DMs", { status: 409 });
+    if (type !== "group")
+      return new Response("Conflict: Chat type must be group", { status: 409 });
 
     // return messages
     const rawResults: string[] = await fetchRedis(

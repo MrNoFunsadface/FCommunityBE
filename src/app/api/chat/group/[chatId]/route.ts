@@ -4,79 +4,33 @@ import jwt from "jsonwebtoken";
 
 /**
  * @openapi
- * /chat/dms/{chatId}:
+ * /chat/group/{chatId}:
  *   get:
- *     summary: Get DM chat metadata
- *     description: >
- *       Retrieves metadata for a direct message (DM) chat, including its type, creation time, members, and last message.
- *       Requires a valid Bearer token, and the requester must be a member of the chat.
+ *     summary: Get group chat metadata
+ *     description: Returns chat metadata for the specified group (type, name, createdAt, updatedAt, createdBy, etc).
  *     tags:
- *       - Chat DMs
+ *       - Chat Group
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: chatId
+ *       - name: chatId
+ *         in: path
  *         required: true
- *         description: The unique ID of the DM chat.
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Chat metadata successfully retrieved.
+ *         description: Chat metadata
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ChatMeta'
+ *               type: object
  *       401:
- *         description: Unauthorized — missing token or requester is not part of this chat.
+ *         description: Unauthorized
  *       404:
- *         description: Chat not found.
+ *         description: Chat not found
  *       500:
- *         description: Internal server error.
- *
- * components:
- *   schemas:
- *     ChatMeta:
- *       type: object
- *       properties:
- *         chatId:
- *           type: string
- *           example: "767f62c7-2cd5-4746-9a94-8467e573dc97"
- *         type:
- *           type: string
- *           description: Chat type, usually "dms".
- *           example: "dms"
- *         createdAt:
- *           type: integer
- *           nullable: true
- *           description: Unix timestamp when the chat was created.
- *           example: 1760682108173
- *         members:
- *           type: array
- *           description: Array of user IDs participating in the chat.
- *           items:
- *             type: string
- *           example: ["71db50d4-f833-47dd-aea2-07c014ce05ae", "360fc452-7f02-4e11-89d7-a30d2eaf2085"]
- *         lastMessage:
- *           type: object
- *           nullable: true
- *           description: The last message sent in the chat.
- *           properties:
- *             id:
- *               type: string
- *               format: uuid
- *             senderId:
- *               type: string
- *             text:
- *               type: string
- *             timestamp:
- *               type: integer
- *           example:
- *             id: "6fe5f221-d5bb-42d3-af8f-5f4786655b78"
- *             senderId: "71db50d4-f833-47dd-aea2-07c014ce05ae"
- *             text: "OMG WAHROO"
- *             timestamp: 1760682761439
+ *         description: Internal server error
  */
 
 export async function GET(
@@ -84,7 +38,8 @@ export async function GET(
   context: { params: Promise<{ chatId: string }> }
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader =
+      req.headers.get("Authorization") || req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer "))
       return new Response("Unauthorized", { status: 401 });
@@ -94,7 +49,17 @@ export async function GET(
       id: string;
     };
 
-    const { chatId } = await context.params;
+    const body = await context.params;
+    const { chatId } = body as {
+      chatId: string;
+    };
+
+    // check to see if chat is a group or not
+
+    const type = await db.hget(`chat:${chatId}:meta`, "type");
+
+    if (type !== "group")
+      return new Response("Conflict: Chat type must be group", { status: 409 });
 
     const rawMeta = await db.hgetall(`chat:${chatId}:meta`);
 
@@ -133,9 +98,9 @@ export async function GET(
 
     const meta = {
       chatId,
+      name: rawMeta.name,
       type: rawMeta.type,
       createdAt: rawMeta.createdAt ? Number(rawMeta.createdAt) : null,
-      members: [rawMeta.user1, rawMeta.user2].filter(Boolean),
       lastMessage,
     };
 
@@ -155,7 +120,6 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error(`dms/[chatId] error:`, error);
     return new Response("Internal server error", { status: 500 });
   }
 }
