@@ -128,32 +128,39 @@ export async function POST(
 
     const results = (rawResults || [])
       .map((item) => {
-        let parsed: any = null;
+        let candidate: unknown = null;
         try {
-          parsed = typeof item === "string" ? JSON.parse(item) : item;
+          candidate = typeof item === "string" ? JSON.parse(item) : item;
         } catch (err) {
           // try handling double-encoded JSON
           try {
-            parsed = JSON.parse(JSON.parse(String(item)));
+            candidate = JSON.parse(JSON.parse(String(item)));
           } catch (err2) {
             console.error("Failed to parse message item:", item);
-            parsed = null;
+            candidate = null;
           }
         }
 
-        if (parsed && parsed.timestamp) {
-          parsed.timestamp = Number(parsed.timestamp);
-        }
+        if (!isMessage(candidate)) return null;
 
-        return parsed;
+        // normalize timestamp to number
+        const msg: Message = {
+          id: candidate.id,
+          senderId: candidate.senderId,
+          text: candidate.text,
+          timestamp: Number(candidate.timestamp),
+        };
+
+        return msg;
       })
-      .filter(Boolean);
+      .filter((m): m is Message => Boolean(m));
 
     return new Response(JSON.stringify(results), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.debug("dms/[chatId]/messages returns an error: ", error);
     return new Response("Internal server error", { status: 500 });
   }
 }

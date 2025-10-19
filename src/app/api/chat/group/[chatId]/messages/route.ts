@@ -141,7 +141,7 @@ export async function POST(
 
     const results = (rawResults || [])
       .map((item) => {
-        let parsed: any = null;
+        let parsed: unknown = null;
         try {
           parsed = typeof item === "string" ? JSON.parse(item) : item;
         } catch (err) {
@@ -154,8 +154,15 @@ export async function POST(
           }
         }
 
-        if (parsed && parsed.timestamp) {
-          parsed.timestamp = Number(parsed.timestamp);
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          "timestamp" in parsed &&
+          parsed !== null
+        ) {
+          (parsed as { timestamp: number | string }).timestamp = Number(
+            (parsed as { timestamp: number | string }).timestamp
+          );
         }
 
         return parsed;

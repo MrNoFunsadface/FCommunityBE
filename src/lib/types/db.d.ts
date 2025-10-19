@@ -13,7 +13,6 @@ interface Chat {
 interface Message {
   id: string;
   senderId: string;
-  receiverId: string;
   text: string;
   timestamp: number;
 }
@@ -22,4 +21,15 @@ interface FriendRequest {
   id: string;
   senderId: string;
   receieverId: string;
+}
+
+function isMessage(obj: Unknown): obj is Message {
+  if (typeof obj !== "object" || obj === null) return false;
+  const o = obj as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.senderId === "string" &&
+    typeof o.text === "string" &&
+    (typeof o.timestamp === "number" || typeof o.timestamp === "string")
+  );
 }

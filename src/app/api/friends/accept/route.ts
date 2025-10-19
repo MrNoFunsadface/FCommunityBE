@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     let payload: { id: string };
     try {
       payload = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -150,7 +150,7 @@ export async function POST(req: Request) {
     );
 
     return new Response("OK", { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return new Response("Invalid request payload", { status: 422 });
     }

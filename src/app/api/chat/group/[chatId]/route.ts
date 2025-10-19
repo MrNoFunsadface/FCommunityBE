@@ -68,24 +68,29 @@ export async function GET(
     }
 
     // robust lastMessage parsing
-    let lastMessage: any = null;
+    let lastMessage: Message | null = null;
     if (rawMeta.lastMessage) {
       const raw = rawMeta.lastMessage;
       try {
-        if (typeof raw === "string") {
-          // try single parse
-          lastMessage = JSON.parse(raw);
-        } else {
-          // already an object
-          lastMessage = raw;
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+        if (isMessage(parsed)) {
+          lastMessage = { ...parsed, timestamp: Number(parsed.timestamp) };
         }
       } catch (err) {
         // try double-encoded JSON (common mistake)
         try {
-          lastMessage = JSON.parse(JSON.parse(String(raw)));
+          const doubleParsed = JSON.parse(JSON.parse(String(raw)));
+          if (isMessage(doubleParsed)) {
+            lastMessage = {
+              ...doubleParsed,
+              timestamp: Number(doubleParsed.timestamp),
+            };
+          }
         } catch (err2) {
           // fallback: log and leave null
           console.error("Failed to parse lastMessage:", raw);
+          console.error(err2);
           lastMessage = null;
         }
       }
