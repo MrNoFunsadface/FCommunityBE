@@ -10,7 +10,7 @@ import jwt from "jsonwebtoken";
  *       Returns a list of all existing DM chat sessions for the currently authenticated user.
  *       Each item includes the friend's basic user information and the chat ID.
  *     tags:
- *       - Chat
+ *       - Chat DMs
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -35,12 +35,12 @@ import jwt from "jsonwebtoken";
  *                         type: string
  *                         nullable: true
  *                         description: The friend's display name.
- *                         example: "Minh Nguyen"
+ *                         example: "TakoTakoTime"
  *                       email:
  *                         type: string
  *                         nullable: true
  *                         description: The friend's email address.
- *                         example: "minh@example.com"
+ *                         example: "wahwahcookie@gmail.com"
  *                   chatId:
  *                     type: string
  *                     description: The unique ID of the DM chat between the user and this friend.
