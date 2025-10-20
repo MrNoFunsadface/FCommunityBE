@@ -1,6 +1,8 @@
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { isMessage } from "@/lib/types/db";
+import type { Message } from "@/lib/types/db";
 
 /**
  * @openapi

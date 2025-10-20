@@ -1,29 +1,29 @@
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
   image: string | null;
 }
 
-interface Chat {
+export interface Chat {
   id: string;
   messages: Message[];
 }
 
-interface Message {
+export interface Message {
   id: string;
   senderId: string;
   text: string;
   timestamp: number;
 }
 
-interface FriendRequest {
+export interface FriendRequest {
   id: string;
   senderId: string;
   receieverId: string;
 }
 
-function isMessage(obj: Unknown): obj is Message {
+export function isMessage(obj: unknown): obj is Message {
   if (typeof obj !== "object" || obj === null) return false;
   const o = obj as Record<string, unknown>;
   return (
@@ -33,3 +33,5 @@ function isMessage(obj: Unknown): obj is Message {
     (typeof o.timestamp === "number" || typeof o.timestamp === "string")
   );
 }
+
+export default {};
