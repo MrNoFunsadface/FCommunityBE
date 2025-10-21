@@ -1,22 +1,27 @@
 const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-type Commands = 'zrange' | 'sismember' | 'get' | 'smembers'
+type Commands = "zrange" | "zrevrange" | "sismember" | "get" | "smembers";
 
-export async function fetchRedis(command: Commands, ...args: (string | number)[]) {
-    const commandUrl = `${upstashRedisRestUrl}/${command}/${args.join('/')}`
+export async function fetchRedis(
+  command: Commands,
+  ...args: (string | number)[]
+) {
+  const commandUrl = `${upstashRedisRestUrl}/${command}/${args.join("/")}`;
 
-    const response = await fetch(commandUrl, {
-            headers: {
-                Authorization: `Bearer ${upstashRedisRestToken}`
-            },
-            cache: 'no-store'
-        })
+  const response = await fetch(commandUrl, {
+    headers: {
+      Authorization: `Bearer ${upstashRedisRestToken}`,
+    },
+    cache: "no-store",
+  });
 
-    if (!response.ok) {
-        throw new Error(`Error fetching Redis command ${command}: ${response.statusText}`);
-    }
+  if (!response.ok) {
+    throw new Error(
+      `Error fetching Redis command ${command}: ${response.statusText}`
+    );
+  }
 
-    const data = await response.json()
-    return data.result
+  const data = await response.json();
+  return data.result;
 }

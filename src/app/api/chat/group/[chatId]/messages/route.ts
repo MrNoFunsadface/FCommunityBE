@@ -133,7 +133,7 @@ export async function POST(
 
     // return messages
     const rawResults: string[] = await fetchRedis(
-      "zrange",
+      "zrevrange",
       `chat:${chatId}:messages`,
       startPos,
       endPos
