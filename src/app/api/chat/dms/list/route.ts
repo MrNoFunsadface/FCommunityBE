@@ -86,14 +86,35 @@ export async function GET(req: Request) {
               email: rawUser.email ?? null,
             };
 
-            return { user, chatId };
+            // fetch updatedAt from chat meta
+            const updatedAtRaw = await db.hget(
+              `chat:${chatId}:meta`,
+              "updatedAt"
+            );
+            const updatedAt = updatedAtRaw ? Number(updatedAtRaw) : null;
+
+            return { user, chatId, updatedAt };
           } catch (err) {
             console.error("Error building dm entry for", userId, chatId, err);
             return null;
           }
         })
       )
-    ).filter(Boolean);
+    )
+      .filter(
+        (
+          v
+        ): v is {
+          user: { id: string; name: string | null; email: string | null };
+          chatId: string;
+          updatedAt: number | null;
+        } => Boolean(v)
+      )
+      .sort((a, b) => {
+        const ta = a.updatedAt ?? 0;
+        const tb = b.updatedAt ?? 0;
+        return tb - ta; // most recent first
+      });
 
     return new Response(JSON.stringify(dmList), {
       status: 200,

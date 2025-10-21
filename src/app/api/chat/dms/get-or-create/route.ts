@@ -89,6 +89,7 @@ export async function POST(req: Request) {
         db.hset(`chat:${newChatId}:meta`, { createdAt: Date.now() }),
         db.hset(`chat:${newChatId}:meta`, { user1: payload.id }),
         db.hset(`chat:${newChatId}:meta`, { user2: userId }),
+        db.hset(`chat:${newChatId}:meta`, { updatedAt: Date.now() }),
       ]);
 
       return new Response(

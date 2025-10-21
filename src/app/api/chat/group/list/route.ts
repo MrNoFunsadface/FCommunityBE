@@ -48,7 +48,31 @@ export async function GET(req: Request) {
       | string[]
       | null;
 
-    const groupList = groups || [];
+    const entries = groups || [];
+
+    const groupList = (
+      await Promise.all(
+        entries.map(async (chatId) => {
+          try {
+            const updatedAtRaw = await db.hget(
+              `chat:${chatId}:meta`,
+              "updatedAt"
+            );
+
+            const updatedAt = updatedAtRaw ? Number(updatedAtRaw) : null;
+
+            return { chatId, updatedAt };
+          } catch (err) {
+            console.error("Error building group entry for:", chatId, err);
+            return null;
+          }
+        })
+      )
+    )
+      .filter((v): v is { chatId: string; updatedAt: number | null } =>
+        Boolean(v)
+      )
+      .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
 
     return new Response(JSON.stringify(groupList), {
       status: 200,

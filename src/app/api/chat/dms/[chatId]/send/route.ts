@@ -157,6 +157,12 @@ export async function POST(
       lastMessage: JSON.stringify(message),
     });
 
+    // update chat updatedAt
+
+    await db.hset(`chat:${chatId}:meta`, {
+      updatedAt: Date.now(),
+    });
+
     return new Response(JSON.stringify(message), {
       status: 201,
       headers: { "Content-Type": "application/json" },
