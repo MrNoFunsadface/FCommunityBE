@@ -1,5 +1,6 @@
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
+import { isMessage, Message } from "@/lib/types/db";
 import jwt from "jsonwebtoken";
 
 /**

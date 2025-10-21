@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { pusherServer } from "@/lib/pusher";
 import { randomUUID } from "crypto";
+import { User } from "@/lib/types/db";
 
 /**
  * @openapi
