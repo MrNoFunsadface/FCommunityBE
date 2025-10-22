@@ -1,6 +1,6 @@
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
-import { isMessage, Message } from "@/lib/types/db";
+import { isMessage, LastMessage, User } from "@/lib/types/db";
 import jwt from "jsonwebtoken";
 
 /**
@@ -55,6 +55,17 @@ export async function GET(
       chatId: string;
     };
 
+    // check if requester is a part of this dms
+    const isMember = await fetchRedis(
+      "sismember",
+      `chat:${chatId}:members`,
+      payload.id
+    );
+
+    if (isMember === 0) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     // check to see if chat is a group or not
 
     const type = await db.hget(`chat:${chatId}:meta`, "type");
@@ -69,25 +80,64 @@ export async function GET(
     }
 
     // robust lastMessage parsing
-    let lastMessage: Message | null = null;
+    let lastMessage: LastMessage | null = null;
     if (rawMeta.lastMessage) {
       const raw = rawMeta.lastMessage;
       try {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
 
-        if (isMessage(parsed)) {
-          lastMessage = { ...parsed, timestamp: Number(parsed.timestamp) };
+        // Get user info
+
+        const rawUser = (await db.hgetall(`user:${parsed.senderId}`)) as Record<
+          string,
+          string
+        > | null;
+
+        if (!rawUser || Object.keys(rawUser).length === 0) {
+          return new Response("sender user not found", { status: 404 });
         }
+
+        let user: User = {
+          id: rawUser.id,
+          name: rawUser.name,
+          email: rawUser.email,
+          image: null,
+        };
+
+        lastMessage = {
+          id: parsed.id,
+          user,
+          text: parsed.text,
+          timestamp: Number(parsed.timestamp) || Date.now(),
+        };
       } catch (err) {
         // try double-encoded JSON (common mistake)
         try {
           const doubleParsed = JSON.parse(JSON.parse(String(raw)));
-          if (isMessage(doubleParsed)) {
-            lastMessage = {
-              ...doubleParsed,
-              timestamp: Number(doubleParsed.timestamp),
-            };
+
+          // Get user info
+
+          const rawUser = (await db.hgetall(
+            `user:${doubleParsed.senderId}`
+          )) as Record<string, string> | null;
+
+          if (!rawUser || Object.keys(rawUser).length === 0) {
+            return new Response("sender user not found", { status: 404 });
           }
+
+          let user: User = {
+            id: rawUser.id,
+            name: rawUser.name,
+            email: rawUser.email,
+            image: null,
+          };
+
+          lastMessage = {
+            id: doubleParsed.id,
+            user,
+            text: doubleParsed.text,
+            timestamp: Number(doubleParsed.timestamp) || Date.now(),
+          };
         } catch (err2) {
           // fallback: log and leave null
           console.error("Failed to parse lastMessage:", raw);
@@ -109,17 +159,6 @@ export async function GET(
       createdAt: rawMeta.createdAt ? Number(rawMeta.createdAt) : null,
       lastMessage,
     };
-
-    // check if requester is a part of this dms
-    const isMember = await fetchRedis(
-      "sismember",
-      `chat:${chatId}:members`,
-      payload.id
-    );
-
-    if (isMember === 0) {
-      return new Response("Unauthorized", { status: 401 });
-    }
 
     return new Response(JSON.stringify(meta), {
       status: 200,

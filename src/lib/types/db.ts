@@ -17,6 +17,13 @@ export interface Message {
   timestamp: number;
 }
 
+export interface LastMessage {
+  id: string;
+  user: User | null;
+  text: string;
+  timestamp: number;
+}
+
 export interface FriendRequest {
   id: string;
   senderId: string;
@@ -29,6 +36,17 @@ export function isMessage(obj: unknown): obj is Message {
   return (
     typeof o.id === "string" &&
     typeof o.senderId === "string" &&
+    typeof o.text === "string" &&
+    (typeof o.timestamp === "number" || typeof o.timestamp === "string")
+  );
+}
+
+export function isLastMessage(obj: unknown): obj is LastMessage {
+  if (typeof obj !== "object" || obj === null) return false;
+  const o = obj as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.User === "object" &&
     typeof o.text === "string" &&
     (typeof o.timestamp === "number" || typeof o.timestamp === "string")
   );
