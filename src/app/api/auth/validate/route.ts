@@ -81,11 +81,11 @@ export async function GET(rq: Request) {
       );
     }
 
-    // ✅ Only return the validity flag
-    return new Response(
-      JSON.stringify({ valid: true }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    // Only return the validity flag
+    return new Response(JSON.stringify({ valid: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Token validation error:", error);
     return new Response(

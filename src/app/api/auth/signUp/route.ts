@@ -98,7 +98,7 @@ export async function POST(rq: Request) {
     );
 
     return new Response(JSON.stringify({ id: userId, email, name, token }), {
-      status: 201,
+      status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
