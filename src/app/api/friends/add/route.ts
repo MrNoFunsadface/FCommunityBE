@@ -125,7 +125,7 @@ export async function POST(rq: Request) {
     if (error instanceof z.ZodError) {
       return new Response("Invalid request payload", { status: 422 });
     }
-
+    console.debug("friends/add: ", error);
     return new Response("Invalid request", { status: 400 });
   }
 }
