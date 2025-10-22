@@ -167,7 +167,7 @@ export async function GET(
             return new Response("sender user not found", { status: 404 });
           }
 
-          let user: User = {
+          const user: User = {
             id: rawUser.id,
             name: rawUser.name,
             email: rawUser.email,
