@@ -7,9 +7,12 @@ const key =
 const secret =
   process.env.PUSHER_APP_SECRET ?? process.env.NEXT_PUBLIC_PUSHER_APP_SECRET;
 
-let _pusherServer: {
-  trigger: (...args: any[]) => Promise<any>;
-};
+/** Minimal interface describing the parts of Pusher we use */
+interface PusherLike {
+  trigger(channel: string, event: string, data?: unknown): Promise<void>;
+}
+
+let _pusherServer: PusherLike;
 
 if (!appId || !key || !secret) {
   console.warn(
@@ -17,16 +20,25 @@ if (!appId || !key || !secret) {
   );
 
   _pusherServer = {
-    trigger: async (..._args: any[]) => Promise.resolve(),
+    async trigger(
+      _channel: string,
+      _event: string,
+      _data?: unknown
+    ): Promise<void> {
+      // no-op; return void promise to match real Pusher API
+      return Promise.resolve();
+    },
   };
 } else {
+  // The PusherServer instance implements trigger(channel, event, data)
+  // We cast to PusherLike to keep the exported API narrow and typed.
   _pusherServer = new PusherServer({
     appId,
     key,
     secret,
     cluster: "ap1",
     useTLS: true,
-  });
+  }) as unknown as PusherLike;
 }
 
 export const pusherServer = _pusherServer;
