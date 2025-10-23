@@ -139,7 +139,7 @@ export async function GET(
           return new Response("sender user not found", { status: 404 });
         }
 
-        const user: User = {
+        const sender: User = {
           id: rawUser.id,
           name: rawUser.name,
           email: rawUser.email,
@@ -148,7 +148,7 @@ export async function GET(
 
         lastMessage = {
           id: parsed.id,
-          user,
+          sender: sender,
           text: parsed.text,
           timestamp: Number(parsed.timestamp) || Date.now(),
         };
@@ -167,7 +167,7 @@ export async function GET(
             return new Response("sender user not found", { status: 404 });
           }
 
-          const user: User = {
+          const sender: User = {
             id: rawUser.id,
             name: rawUser.name,
             email: rawUser.email,
@@ -176,7 +176,7 @@ export async function GET(
 
           lastMessage = {
             id: parsed.id,
-            user,
+            sender: sender,
             text: parsed.text,
             timestamp: Number(parsed.timestamp) || Date.now(),
           };

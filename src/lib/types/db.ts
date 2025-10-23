@@ -19,7 +19,7 @@ export interface Message {
 
 export interface LastMessage {
   id: string;
-  user: User | null;
+  sender: User | null;
   text: string;
   timestamp: number;
 }
